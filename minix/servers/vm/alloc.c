@@ -367,7 +367,8 @@ void memstats(int *nodes, int *pages, int *largest)
 }
 
 static int findbit(int low, int startscan, int pages, int memflags, int *len)
-{
+{	printf("Beginning of findbit()");
+ 
 	int run_length = 0, i;
 	int freerange_start = startscan;
 
