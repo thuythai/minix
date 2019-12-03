@@ -93,4 +93,7 @@ int nice_to_priority(int nice, unsigned *new_q);
 int pm_isokendpt(int ep, int *proc);
 void tell_vfs(struct mproc *rmp, message *m_ptr);
 void set_rusage_times(struct rusage *r_usage, clock_t user_time,
-	clock_t sys_time);
+clock_t sys_time);
+
+/* mempolicy.c */
+int do_cyclemempolicy(void);
