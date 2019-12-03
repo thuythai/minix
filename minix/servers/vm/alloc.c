@@ -21,6 +21,9 @@
 #include <errno.h>
 #include <assert.h>
 #include <memory.h>
+#include <time.h>
+#include <stdlib.h>
+#include "../pm/memheader.c"
 
 #include "vm.h"
 #include "proto.h"
@@ -249,7 +252,7 @@ phys_clicks alloc_mem(phys_clicks clicks, u32_t memflags)
  */
   phys_clicks mem = NO_MEM, align_clicks = 0;
 
-  if(memflags & PAF_ALIGN64K) {
+  if(memflags & PAF_ALIGN64K) {//First fit algorithm here?
   	align_clicks = (64 * 1024) / CLICK_SIZE;
 	clicks += align_clicks;
   } else if(memflags & PAF_ALIGN16K) {
@@ -257,14 +260,14 @@ phys_clicks alloc_mem(phys_clicks clicks, u32_t memflags)
 	clicks += align_clicks;
   }
 
-  do {
+  do {//First fit algorithm here?
 	mem = alloc_pages(clicks, memflags);
   } while(mem == NO_MEM && cache_freepages(clicks) > 0);
 
-  if(mem == NO_MEM)
+  if(mem == NO_MEM)//Error state
   	return mem;
 
-  if(align_clicks) {
+  if(align_clicks) {//shifts memory block to be on a click boundry?
   	phys_clicks o;
   	o = mem % align_clicks;
   	if(o > 0) {
@@ -366,14 +369,13 @@ void memstats(int *nodes, int *pages, int *largest)
 	}
 }
 
-static int findbit(int low, int startscan, int pages, int memflags, int *len)
-{	printf("Beginning of findbit()");
- 
+static int findbit(int low, int startscan, int pages, int memflags, int *len)//First Fit algorithm is here
+{
 	int run_length = 0, i;
 	int freerange_start = startscan;
 
-	for(i = startscan; i >= low; i--) {
-		if(!page_isfree(i)) {
+	for(i = startscan; i >= low; i--) {//start at startscan and scan backwards until you hit low
+		if(!page_isfree(i)) {//if the page at that address is free
 			int pi;
 			int chunk = i/BITCHUNK_BITS, moved = 0;
 			run_length = 0;
@@ -396,6 +398,128 @@ static int findbit(int low, int startscan, int pages, int memflags, int *len)
 		}
 	}
 
+	return NO_MEM;
+}
+
+static int findbitb(int low, int startscan, int pages, int memflags, int *len)
+{
+	int run_length = 0, i;
+	int freerange_start = startscan;
+	int best = INT_MAX;//Maximum value of an int
+	int bestaddress;
+	
+	for(i = startscan; i > low; i--) {
+		if(!page_isfree(i)) {
+			
+			int pi;
+			int chunk = i/BITCHUNK_BITS, moved = 0;
+			run_length = 0;
+			pi = i;
+			while(chunk > 0 &&
+				!MAP_CHUNK(free_pages_bitmap, chunk*BITCHUNK_BITS)) {
+				chunk--;
+				moved = 1;
+			}
+			if(moved) { i = chunk * BITCHUNK_BITS + BITCHUNK_BITS; }
+			continue;
+		}
+				
+		if((!page_isfree(i)) && (page_isfree(i-1)) && (run_length >= pages) && (run_length < best)) {//if the block is big enough but smaller than the current best, only activates at the end fo the block
+			best = run_length;//set the block as the new best
+			bestaddress = freerange_start;//record the start
+		}
+		
+		if(!run_length) { freerange_start = i; run_length = 1; }
+		else { freerange_start--; run_length++; }//this works like in first fit
+		
+	}
+	//assert(best <= pages);
+	if(best >= pages && best < INT_MAX) { //return the address of the start of the block if they found anything.
+		*len = pages;
+		return bestaddress;
+	}
+	return NO_MEM;
+}
+
+static int findbitw(int low, int startscan, int pages, int memflags, int *len)
+{
+	int run_length = 0, i;
+	int freerange_start = startscan;
+	int worst = 0;
+	int worstaddress;
+	
+	for(i = startscan; i > low; i--) {
+		if(!page_isfree(i)) {
+			
+			int pi;
+			int chunk = i/BITCHUNK_BITS, moved = 0;
+			run_length = 0;
+			pi = i;
+			while(chunk > 0 &&
+				!MAP_CHUNK(free_pages_bitmap, chunk*BITCHUNK_BITS)) {
+				chunk--;
+				moved = 1;
+			}
+			if(moved) { i = chunk * BITCHUNK_BITS + BITCHUNK_BITS; }
+			continue;
+		}
+		
+		if((!page_isfree(i)) && (page_isfree(i-1)) && (run_length >= pages) && (run_length > worst)) {
+			worst = run_length;
+			worstaddress = freerange_start;
+		}
+		
+		if(!run_length) { freerange_start = i; run_length = 1; }
+		else { freerange_start--; run_length++; }
+		
+	}
+	//assert(best <= pages);
+	if(worst >= pages) {
+		*len = pages;
+		return worstaddress;
+	}
+	return NO_MEM;
+}
+
+static int findbitr(int low, int startscan, int pages, int memflags, int *len)
+{
+	int run_length = 0, i;
+	int freerange_start = startscan;
+	int addresslist[500];
+	int addressnumber = 0;
+	int rando;
+	
+	for(i = startscan; i > low; i--) {
+		if(!page_isfree(i)) {
+			
+			int pi;
+			int chunk = i/BITCHUNK_BITS, moved = 0;
+			run_length = 0;
+			pi = i;
+			while(chunk > 0 &&
+				!MAP_CHUNK(free_pages_bitmap, chunk*BITCHUNK_BITS)) {
+				chunk--;
+				moved = 1;
+			}
+			if(moved) { i = chunk * BITCHUNK_BITS + BITCHUNK_BITS; }
+			continue;
+		}
+		
+		if((!page_isfree(i)) && (page_isfree(i-1)) && (run_length >= pages)) {
+			addresslist[addressnumber] = freerange_start;
+			addressnumber++;
+		}
+		
+		if(!run_length) { freerange_start = i; run_length = 1; }
+		else { freerange_start--; run_length++; }
+		
+	}
+	//assert(best <= pages);
+	if(addressnumber >= 1) {
+		*len = pages;
+		int bestaddress = addresslist[rando % addressnumber];
+		return bestaddress;
+	}
 	return NO_MEM;
 }
 
@@ -432,16 +556,50 @@ static phys_bytes alloc_pages(int pages, int memflags)
 		}
 	}
 
-	if(lastscan < maxpage && lastscan >= 0)
+	if(lastscan < maxpage && lastscan >= 0)//First fit starts here?
 		startscan = lastscan;
 	else	startscan = maxpage;
 
-	if(mem == NO_MEM)
-		mem = findbit(0, startscan, pages, memflags, &run_length);
-	if(mem == NO_MEM)
-		mem = findbit(0, maxpage, pages, memflags, &run_length);
-	if(mem == NO_MEM)
-		return NO_MEM;
+	if(CUSTOM_MEM_POLICY == FIRST_FIT){
+		if(mem == NO_MEM)
+			mem = findbit(0, startscan, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			mem = findbit(0, maxpage, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			return NO_MEM;
+	}
+	else if(CUSTOM_MEM_POLICY == BEST_FIT){
+		if(mem == NO_MEM)
+			mem = findbitb(0, startscan, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			mem = findbitb(0, maxpage, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			return NO_MEM;
+	}
+	else if(CUSTOM_MEM_POLICY == WORST_FIT){
+		if(mem == NO_MEM)
+			mem = findbitw(0, startscan, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			mem = findbitw(0, maxpage, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			return NO_MEM;
+	}
+	else if(CUSTOM_MEM_POLICY == RANDOM_FIT){
+		if(mem == NO_MEM)
+			mem = findbitr(0, startscan, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			mem = findbitr(0, maxpage, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			return NO_MEM;
+	}
+	else{
+		if(mem == NO_MEM)
+			mem = findbit(0, lastscan, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			mem = findbit(0, maxpage, pages, memflags, &run_length);
+		if(mem == NO_MEM)
+			return NO_MEM;
+	}
 
 	/* remember for next time */
 	lastscan = mem;
@@ -546,4 +704,3 @@ int usedpages_add_f(phys_bytes addr, phys_bytes len, const char *file, int line)
 }
 
 #endif
-
