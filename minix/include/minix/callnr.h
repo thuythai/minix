@@ -1,4 +1,3 @@
-/* This header file defines the calls to PM and VFS. */
 #ifndef _MINIX_CALLNR_H
 #define _MINIX_CALLNR_H
 
@@ -58,8 +57,9 @@
 #define PM_GETEPINFO		(PM_BASE + 45)
 #define PM_GETPROCNR		(PM_BASE + 46)
 #define PM_GETSYSINFO		(PM_BASE + 47)
+#define PM_CYCLEMEMPOLICY	(PM_BASE + 48)
 
-#define NR_PM_CALLS		48	/* highest number from base plus one */
+#define NR_PM_CALLS		49	/* highest number from base plus one */
 
 /*===========================================================================*
  *				Calls to VFS				     *
