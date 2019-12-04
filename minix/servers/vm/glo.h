@@ -47,4 +47,4 @@ EXTERN int num_vm_instances;
 
 #endif /* !_VM_GLO_H */
 
-int selection;
+//int selection;
