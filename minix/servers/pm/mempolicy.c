@@ -6,8 +6,6 @@
 #include "memheader.c"
 
 int do_cyclemempolicy(void){
-    //CUSTOM_MEM_POLICY = (CUSTOM_MEM_POLICY + 1) % 5;
-    //CUSTOM_MEM_POLICY = selection;
     CUSTOM_MEM_POLICY = 0;
 
     return(OK);
