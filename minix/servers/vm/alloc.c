@@ -369,13 +369,13 @@ void memstats(int *nodes, int *pages, int *largest)
 	}
 }
 
-static int findbit(int low, int startscan, int pages, int memflags, int *len)//First Fit algorithm is here
+static int findbit(int low, int startscan, int pages, int memflags, int *len)
 {
 	int run_length = 0, i;
 	int freerange_start = startscan;
 
-	for(i = startscan; i >= low; i--) {//start at startscan and scan backwards until you hit low
-		if(!page_isfree(i)) {//if the page at that address is free
+	for(i = startscan; i >= low; i--) {
+		if(!page_isfree(i)) {
 			int pi;
 			int chunk = i/BITCHUNK_BITS, moved = 0;
 			run_length = 0;
@@ -424,7 +424,7 @@ static int findbitb(int low, int startscan, int pages, int memflags, int *len)
 			continue;
 		}
 				
-		if((!page_isfree(i)) && (page_isfree(i-1)) && (run_length >= pages) && (run_length < best)) {//if the block is big enough but smaller than the current best, only activates at the end fo the block
+		if((!page_isfree(i)) && (page_isfree(i-1)) && (run_length >= pages) && (run_length < best)) {//if the block is big enough but smaller than the current best, only activates at the end of the block
 			best = run_length;//set the block as the new best
 			bestaddress = freerange_start;//record the start
 		}
