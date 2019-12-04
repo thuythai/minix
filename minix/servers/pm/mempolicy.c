@@ -7,7 +7,7 @@
 
 int do_cyclemempolicy(void){
     //CUSTOM_MEM_POLICY = (CUSTOM_MEM_POLICY + 1) % 5;
-    CUSTOM_MEM_POLICY = 0;
+    CUSTOM_MEM_POLICY = selection;
 
     return(OK);
 }
