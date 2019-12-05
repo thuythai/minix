@@ -7,6 +7,7 @@
 
 int do_cyclemempolicy(void){
     //CUSTOM_MEM_POLICY = 0;
+    printf("before custom mem policy");
     CUSTOM_MEM_POLICY = m_in.m1_i1;
     printf("CUSTOM_MEM_POLICY is set to: %d\n", CUSTOM_MEM_POLICY);
     return(OK);
