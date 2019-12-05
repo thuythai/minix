@@ -561,7 +561,6 @@ static phys_bytes alloc_pages(int pages, int memflags)
 	else	startscan = maxpage;
 
 	if(CUSTOM_MEM_POLICY == FIRST_FIT){
-		printf("FIRST_FIT is selected \n");
 		if(mem == NO_MEM)
 			mem = findbit(0, startscan, pages, memflags, &run_length);
 		if(mem == NO_MEM)
@@ -570,7 +569,6 @@ static phys_bytes alloc_pages(int pages, int memflags)
 			return NO_MEM;
 	}
 	else if(CUSTOM_MEM_POLICY == BEST_FIT){
-		printf("BEST_FIT is selected \n");
 		if(mem == NO_MEM)
 			mem = findbitb(0, startscan, pages, memflags, &run_length);
 		if(mem == NO_MEM)
@@ -579,7 +577,6 @@ static phys_bytes alloc_pages(int pages, int memflags)
 			return NO_MEM;
 	}
 	else if(CUSTOM_MEM_POLICY == WORST_FIT){
-		printf("WORST_FIT is selected \n");
 		if(mem == NO_MEM)
 			mem = findbitw(0, startscan, pages, memflags, &run_length);
 		if(mem == NO_MEM)
@@ -588,7 +585,6 @@ static phys_bytes alloc_pages(int pages, int memflags)
 			return NO_MEM;
 	}
 	else if(CUSTOM_MEM_POLICY == RANDOM_FIT){
-		printf("RANDOM_FIT is selected \n");
 		if(mem == NO_MEM)
 			mem = findbitr(0, startscan, pages, memflags, &run_length);
 		if(mem == NO_MEM)
