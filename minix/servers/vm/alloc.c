@@ -401,7 +401,7 @@ static int findbit(int low, int startscan, int pages, int memflags, int *len)
 	return NO_MEM;
 }
 
-static int findbitb(int low, int startscan, int pages, int memflags, int *len)
+static int findbit_bestfit(int low, int startscan, int pages, int memflags, int *len)
 {
 	int run_length = 0, i;
 	int freerange_start = startscan;
@@ -441,7 +441,7 @@ static int findbitb(int low, int startscan, int pages, int memflags, int *len)
 	return NO_MEM;
 }
 
-static int findbitw(int low, int startscan, int pages, int memflags, int *len)
+static int findbit_worstfit(int low, int startscan, int pages, int memflags, int *len)
 {
 	int run_length = 0, i;
 	int freerange_start = startscan;
@@ -481,7 +481,7 @@ static int findbitw(int low, int startscan, int pages, int memflags, int *len)
 	return NO_MEM;
 }
 
-static int findbitr(int low, int startscan, int pages, int memflags, int *len)
+static int findbit_randomfit(int low, int startscan, int pages, int memflags, int *len)
 {
 	int run_length = 0, i;
 	int freerange_start = startscan;
@@ -556,7 +556,7 @@ static phys_bytes alloc_pages(int pages, int memflags)
 		}
 	}
 
-	if(lastscan < maxpage && lastscan >= 0)//First fit starts here?
+	if(lastscan < maxpage && lastscan >= 0)
 		startscan = lastscan;
 	else	startscan = maxpage;
 
@@ -570,29 +570,29 @@ static phys_bytes alloc_pages(int pages, int memflags)
 	}
 	else if(CUSTOM_MEM_POLICY == BEST_FIT){
 		if(mem == NO_MEM)
-			mem = findbitb(0, startscan, pages, memflags, &run_length);
+			mem = findbit_bestfit(0, startscan, pages, memflags, &run_length);
 		if(mem == NO_MEM)
-			mem = findbitb(0, maxpage, pages, memflags, &run_length);
+			mem = findbit_bestfit(0, maxpage, pages, memflags, &run_length);
 		if(mem == NO_MEM)
 			return NO_MEM;
 	}
 	else if(CUSTOM_MEM_POLICY == WORST_FIT){
 		if(mem == NO_MEM)
-			mem = findbitw(0, startscan, pages, memflags, &run_length);
+			mem = findbit_worstfit(0, startscan, pages, memflags, &run_length);
 		if(mem == NO_MEM)
-			mem = findbitw(0, maxpage, pages, memflags, &run_length);
+			mem = findbit_worstfit(0, maxpage, pages, memflags, &run_length);
 		if(mem == NO_MEM)
 			return NO_MEM;
 	}
 	else if(CUSTOM_MEM_POLICY == RANDOM_FIT){
 		if(mem == NO_MEM)
-			mem = findbitr(0, startscan, pages, memflags, &run_length);
+			mem = findbit_randomfit(0, startscan, pages, memflags, &run_length);
 		if(mem == NO_MEM)
-			mem = findbitr(0, maxpage, pages, memflags, &run_length);
+			mem = findbit_randomfit(0, maxpage, pages, memflags, &run_length);
 		if(mem == NO_MEM)
 			return NO_MEM;
 	}
-	else{
+	else{ //nextfit uses findbit() of first fit, but with different parameters
 		if(mem == NO_MEM)
 			mem = findbit(0, lastscan, pages, memflags, &run_length);
 		if(mem == NO_MEM)
