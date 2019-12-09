@@ -23,7 +23,7 @@
 #include <memory.h>
 #include <time.h>
 #include <stdlib.h>
-#include "../pm/memheader.c"
+#include "../pm/memSelectionHeader.c"
 
 #include "vm.h"
 #include "proto.h"
