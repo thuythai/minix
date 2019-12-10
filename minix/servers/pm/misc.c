@@ -141,7 +141,7 @@ do_getsysinfo(void)
 
   dst_addr = m_in.m_lsys_getsysinfo.where;
 printf("This is where: %lu\n", m_in.m_lsys_getsysinfo.where);
-printf("This is what: %lu\n", m_in.m_lsys_getsysinfo.what);
+printf("This is what: %d\n", m_in.m_lsys_getsysinfo.what);
 printf("This is source: %lu\n", src_addr);
 return sys_datacopy(SELF, src_addr, who_e, dst_addr, len);
 }
