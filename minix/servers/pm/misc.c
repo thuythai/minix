@@ -107,6 +107,7 @@ do_sysuname(void)
 int
 do_getsysinfo(void)
 {
+printf("This is getsysinfo from the kernel \n");
   vir_bytes src_addr, dst_addr;
   size_t len;
 
