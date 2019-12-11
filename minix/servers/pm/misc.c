@@ -121,6 +121,10 @@ printf("This is getsysinfo from the kernel 1\n");
 	sys_diagctl_stacktrace(mp->mp_endpoint);
 	return EPERM;
   }
+printf("This is where before 2: %lu\n", m_in.m_lsys_getsysinfo.where);
+printf("This is what before 2: %d\n", m_in.m_lsys_getsysinfo.what);
+printf("This is source before 2: %lu\n", src_addr);
+	
 printf("This is getsysinfo from the kernel 2\n");
   switch(m_in.m_lsys_getsysinfo.what) {
   case SI_PROC_TAB:			/* copy entire process table */
