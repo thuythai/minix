@@ -107,7 +107,7 @@ do_sysuname(void)
 int
 do_getsysinfo(void)
 {
-printf("This is getsysinfo from the kernel \n");
+printf("This is getsysinfo from the kernel 1\n");
   vir_bytes src_addr, dst_addr;
   size_t len;
 
@@ -121,12 +121,13 @@ printf("This is getsysinfo from the kernel \n");
 	sys_diagctl_stacktrace(mp->mp_endpoint);
 	return EPERM;
   }
-
+printf("This is getsysinfo from the kernel 2\n");
   switch(m_in.m_lsys_getsysinfo.what) {
   case SI_PROC_TAB:			/* copy entire process table */
         src_addr = (vir_bytes) mproc;
         len = sizeof(struct mproc) * NR_PROCS;
         break;
+printf("This is getsysinfo from the kernel 3\n");
 #if ENABLE_SYSCALL_STATS
   case SI_CALL_STATS:
   	src_addr = (vir_bytes) calls_stats;
@@ -136,7 +137,7 @@ printf("This is getsysinfo from the kernel \n");
   default:
   	return(EINVAL);
   }
-
+printf("This is getsysinfo from the kernel 4\n");
   if (len != m_in.m_lsys_getsysinfo.size)
 	return(EINVAL);
 
