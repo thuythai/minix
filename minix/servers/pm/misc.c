@@ -141,6 +141,7 @@ printf("This is getsysinfo from the kernel 3\n");
   default:
   	return(EINVAL);
   }
+m_in.m_lsys_getsysinfo.size = len;
 printf("This is getsysinfo from the kernel 4\n");
   if (len != m_in.m_lsys_getsysinfo.size)
 	return(EINVAL);
