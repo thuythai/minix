@@ -373,7 +373,6 @@ static int findbit(int low, int startscan, int pages, int memflags, int *len)
 {
 	int run_length = 0, i;
 	int freerange_start = startscan;
-
 	for(i = startscan; i >= low; i--) {
 		if(!page_isfree(i)) {
 			int pi;
@@ -392,12 +391,10 @@ static int findbit(int low, int startscan, int pages, int memflags, int *len)
 		else { freerange_start--; run_length++; }
 		assert(run_length <= pages);
 		if(run_length == pages) {
-			/* good block found! */
 			*len = run_length;
 			return freerange_start;
 		}
 	}
-
 	return NO_MEM;
 }
 
@@ -407,10 +404,8 @@ static int findbit_bestfit(int low, int startscan, int pages, int memflags, int 
 	int freerange_start = startscan;
 	int best = INT_MAX;//Maximum value of an int
 	int bestaddress;
-	
 	for(i = startscan; i > low; i--) {
 		if(!page_isfree(i)) {
-			
 			int pi;
 			int chunk = i/BITCHUNK_BITS, moved = 0;
 			run_length = 0;
@@ -423,18 +418,15 @@ static int findbit_bestfit(int low, int startscan, int pages, int memflags, int 
 			if(moved) { i = chunk * BITCHUNK_BITS + BITCHUNK_BITS; }
 			continue;
 		}
-				
 		if((!page_isfree(i)) && (page_isfree(i-1)) && (run_length >= pages) && (run_length < best)) {//if the block is big enough but smaller than the current best, only activates at the end of the block
 			best = run_length;//set the block as the new best
 			bestaddress = freerange_start;//record the start
 		}
-		
 		if(!run_length) { freerange_start = i; run_length = 1; }
-		else { freerange_start--; run_length++; }//this works like in first fit
+		else { freerange_start--; run_length++; }//same as first fit
 		
 	}
-	//assert(best <= pages);
-	if(best >= pages && best < INT_MAX) { //return the address of the start of the block if they found anything.
+	if(best >= pages && best < INT_MAX) { //return the address of the start of the block
 		*len = pages;
 		return bestaddress;
 	}
@@ -447,10 +439,8 @@ static int findbit_worstfit(int low, int startscan, int pages, int memflags, int
 	int freerange_start = startscan;
 	int worst = 0;
 	int worstaddress;
-	
 	for(i = startscan; i > low; i--) {
 		if(!page_isfree(i)) {
-			
 			int pi;
 			int chunk = i/BITCHUNK_BITS, moved = 0;
 			run_length = 0;
@@ -463,17 +453,14 @@ static int findbit_worstfit(int low, int startscan, int pages, int memflags, int
 			if(moved) { i = chunk * BITCHUNK_BITS + BITCHUNK_BITS; }
 			continue;
 		}
-		
 		if((!page_isfree(i)) && (page_isfree(i-1)) && (run_length >= pages) && (run_length > worst)) {
 			worst = run_length;
 			worstaddress = freerange_start;
 		}
-		
 		if(!run_length) { freerange_start = i; run_length = 1; }
 		else { freerange_start--; run_length++; }
 		
 	}
-	//assert(best <= pages);
 	if(worst >= pages) {
 		*len = pages;
 		return worstaddress;
@@ -488,10 +475,8 @@ static int findbit_randomfit(int low, int startscan, int pages, int memflags, in
 	int addresslist[500];
 	int addressnumber = 0;
 	int rando;
-	
 	for(i = startscan; i > low; i--) {
 		if(!page_isfree(i)) {
-			
 			int pi;
 			int chunk = i/BITCHUNK_BITS, moved = 0;
 			run_length = 0;
@@ -504,17 +489,14 @@ static int findbit_randomfit(int low, int startscan, int pages, int memflags, in
 			if(moved) { i = chunk * BITCHUNK_BITS + BITCHUNK_BITS; }
 			continue;
 		}
-		
 		if((!page_isfree(i)) && (page_isfree(i-1)) && (run_length >= pages)) {
 			addresslist[addressnumber] = freerange_start;
 			addressnumber++;
 		}
-		
 		if(!run_length) { freerange_start = i; run_length = 1; }
 		else { freerange_start--; run_length++; }
 		
 	}
-	//assert(best <= pages);
 	if(addressnumber >= 1) {
 		*len = pages;
 		int bestaddress = addresslist[rando % addressnumber];
